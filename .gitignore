@@ -1,0 +1,22 @@
+# PyInstaller build folders
+build/
+dist/
+*.spec
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# VSCode / PyCharm project files
+.vscode/
+.idea/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
