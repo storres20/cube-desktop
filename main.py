@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox, filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -10,6 +9,7 @@ import serial.tools.list_ports
 import threading
 from datetime import datetime
 import csv
+import re
 
 class CubeMonitorApp:
     def __init__(self, root):
@@ -22,15 +22,22 @@ class CubeMonitorApp:
         self.read_thread = None
         self.data_log = []
         self.realtime_labels = {}
-        self.selected_fields = ["Temp", "Alt", "Voltaje"]
+        self.selected_fields = ["Temp", "Alt", "Volt"]
         self.update_interval = 5000
         self.max_points = 100
 
         self.fields = [
-            "Voltaje", "Descent", "Temp", "BMP_T", "Pres", "Hum",
+            "Volt", "Descent", "Temp", "BMP_T", "Pres", "Hum",
             "GyX", "GyY", "GyZ", "AccX", "AccY", "AccZ",
             "MagX", "MagY", "MagZ", "Head", "Alt", "Lat", "Lon", "AltGPS"
         ]
+
+        self.unit_map = {
+            "Volt": "V", "Descent": "m/s", "Temp": "°C", "BMP_T": "°C", "Pres": "hPa",
+            "Hum": "%", "GyX": "°/s", "GyY": "°/s", "GyZ": "°/s", "AccX": "m/s²", "AccY": "m/s²",
+            "AccZ": "m/s²", "MagX": "uT", "MagY": "uT", "MagZ": "uT", "Head": "°",
+            "Alt": "m", "Lat": "", "Lon": "", "AltGPS": "m"
+        }
 
         self.setup_ui()
         self.root.after(self.update_interval, self.update_graphs)
@@ -138,7 +145,7 @@ class CubeMonitorApp:
 
     def update_fields(self, line):
         alias = {
-            "Volt": "Voltaje", "Descent": "Descent", "Temp": "Temp", "BMP_T": "BMP_T",
+            "Volt": "Volt", "Descent": "Descent", "Temp": "Temp", "BMP_T": "BMP_T",
             "Pres": "Pres", "Hum": "Hum", "GyX": "GyX", "GyY": "GyY", "GyZ": "GyZ",
             "AccX": "AccX", "AccY": "AccY", "AccZ": "AccZ",
             "MagX": "MagX", "MagY": "MagY", "MagZ": "MagZ",
@@ -171,8 +178,8 @@ class CubeMonitorApp:
                     for key in self.fields:
                         val = ""
                         for part in line.split():
-                            if part.startswith(key[:4]):
-                                val = part.split(":")[1]
+                            if part.startswith(key + ":"):
+                                val = part.split(":", 1)[1]
                         row.append(val)
                     writer.writerow(row)
             messagebox.showinfo("Éxito", f"Datos guardados en: {filename}")
@@ -187,24 +194,35 @@ class CubeMonitorApp:
         self.graph_fig.clf()
         timestamps = []
         values_dict = {f: [] for f in self.selected_fields}
+
         for timestamp, line in self.data_log[-self.max_points:]:
             timestamps.append(datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S"))
             for f in self.selected_fields:
                 val = ""
                 for part in line.split():
-                    if part.startswith(f[:4]):
-                        val = part.split(":")[1].replace("°", "").replace(",", ".")
+                    if part.startswith(f + ":"):
+                        val = part.split(":", 1)[1].replace(",", ".")
                 try:
-                    values_dict[f].append(float(val[:-1]) if val and val[-1] in "VC%mhPa" else float(val))
+                    match = re.findall(r"[-+]?\d*\.\d+|\d+", val)
+                    values_dict[f].append(float(match[0]) if match else None)
                 except:
                     values_dict[f].append(None)
 
         for i, field in enumerate(self.selected_fields):
             ax = self.graph_fig.add_subplot(len(self.selected_fields), 1, i+1)
             line, = ax.plot(timestamps, values_dict[field], marker='o', label=field)
-            ax.set_title(field)
+            unit = self.unit_map.get(field, "")
+            ax.set_title(f"{field} ({unit})" if unit else field)
             ax.set_ylabel("Valor")
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
+            y_values = [v for v in values_dict[field] if v is not None]
+            if y_values:
+                ymin = min(y_values)
+                ymax = max(y_values)
+                if ymin != ymax:
+                    ax.set_ylim(ymin - 0.1 * abs(ymin), ymax + 0.1 * abs(ymax))
+                else:
+                    ax.set_ylim(ymin - 1, ymax + 1)
             ax.legend()
             mplcursors.cursor(line)
 
