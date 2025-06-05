@@ -38,11 +38,6 @@ Developed using Python and Tkinter, the app provides live plotting, historical l
 
 ## 🛠️ Installation Instructions
 
-Please refer to the individual repositories for setup and deployment instructions:
-
-- Backend setup guide: [https://github.com/storres20/bio-data](https://github.com/storres20/bio-data)
-- Frontend setup guide: [https://github.com/storres20/bio-data-nextjs](https://github.com/storres20/bio-data-nextjs)
-
 ### Prerequisites
 - Python 3.9+
 - Required libraries:
@@ -68,6 +63,7 @@ Use `PyInstaller` to build a standalone app:
 pip install pyinstaller
 pyinstaller --name "CubeMonitor" --onefile --noconsole main.py
 ```
+➡️ You will find the generated executable file in the dist folder.
 
 ---
 
@@ -78,6 +74,22 @@ pyinstaller --name "CubeMonitor" --onefile --noconsole main.py
 3. Select the correct COM port.
 4. Start receiving and visualizing data from the LoRa transmitter.
 5. Save or export your logged data for analysis.
+
+---
+
+## 📦 Repository
+
+GitHub Repository:
+https://github.com/storres20/cube-desktop <!-- Replace with actual repo URL -->
+
+---
+
+## 🧪 Typical Use Case
+
+- This application is ideal for:
+- CubeSat drop simulations from drones (100m altitude).
+- Real-time monitoring of telemetry during environmental experiments.
+- Educational or research settings involving wireless sensor data collection.
 
 ---
 
