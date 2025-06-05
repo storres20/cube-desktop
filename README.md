@@ -95,7 +95,7 @@ https://github.com/storres20/cube-desktop <!-- Replace with actual repo URL -->
 
 ## 📜 License
 
-This project is licensed under the [MIT License](https://github.com/storres20/temphu/blob/main/LICENSE.txt).
+This project is licensed under the [MIT License](https://github.com/storres20/cube-desktop/blob/main/LICENSE.txt).
 
 ---
 
